@@ -1,0 +1,21 @@
+version: 0.2
+
+phases:
+  install:
+    commands:
+      - npm install
+  build:
+    commands:
+      - npm run build
+  post_build:
+    commands:
+      # อัพไฟล์ build ขึ้น S3 (แทนที่ YOUR_BUCKET_NAME ด้วยชื่อ bucket จริง)
+      - aws s3 sync build/ s3://sale-report-peerawet --delete
+
+      # เคลียร์ cache CloudFront (แทนที่ YOUR_DISTRIBUTION_ID ด้วย Distribution ID จริง)
+      - aws cloudfront create-invalidation --distribution-id E10XZ3B7FPVAW8 --paths "/*"
+
+artifacts:
+  files:
+    - "**/*"
+  base-directory: build
