@@ -27,9 +27,18 @@ import SortableTable from "./components/SortableTable";
 import DetailedConversionTable from "./components/DetailedConversionTable";
 
 import SalesChart from "./components/SalesChart";
+import SalesPieChart from "./components/SalesPieChart";
+import SalesTrendChart from "./components/SalesTrendChart";
+import SalesDonutChart from "./components/SalesDonutChart";
 import RepeatPurchaseChart from "./components/RepeatPurchaseChart";
+import RepeatPurchaseComparisonChart from "./components/RepeatPurchaseComparisonChart";
+import RepeatPurchaseStackedChart from "./components/RepeatPurchaseStackedChart";
 import ConversionRateChart from "./components/ConversionRateChart";
+import ConversionRateBarChart from "./components/ConversionRateBarChart";
+import ConversionScatterChart from "./components/ConversionScatterChart";
 import RenewalRateChart from "./components/RenewalRateChart";
+import RenewalPolarChart from "./components/RenewalPolarChart";
+import RenewalFunnelChart from "./components/RenewalFunnelChart";
 import TabNavigation from "./components/TabNavigation";
 import type { TabItem } from "./components/TabNavigation";
 
@@ -552,7 +561,15 @@ function App() {
       content: (
         <>
           <SummaryCards title="สรุปยอดขายรวม" cards={salesCards} />
-          <SalesChart data={salesData} title="กราฟยอดขายรายเดือน" />
+          <div className="grid grid-cols-1 xl:grid-cols-2 gap-8 mb-8">
+            <SalesChart data={salesData} title="กราฟยอดขายรายเดือน" />
+            <SalesPieChart data={salesData} title="สัดส่วนยอดขายแต่ละบริษัท" />
+          </div>
+          <SalesTrendChart data={salesData} title="เทรนด์ยอดขายตามเวลา" />
+          <SalesDonutChart
+            data={salesData}
+            title="การวิเคราะห์ยอดขายและการเติบโต"
+          />
           <SortableTable
             title="รายละเอียดยอดขายแต่ละบริษัท"
             subtitle="คลิกที่หัวคอลัมน์เพื่อเรียงลำดับข้อมูล"
@@ -571,9 +588,20 @@ function App() {
       content: (
         <>
           <SummaryCards title="รายงานยอดซื้อซ้ำ" cards={repeatCards} />
-          <RepeatPurchaseChart
-            data={repeatPurchaseData}
-            title="กราฟยอดซื้อซ้ำรายเดือน"
+          <div className="grid grid-cols-1 xl:grid-cols-2 gap-8 mb-8">
+            <RepeatPurchaseChart
+              data={repeatPurchaseData}
+              title="กราฟยอดซื้อซ้ำรายเดือน"
+            />
+            <RepeatPurchaseStackedChart
+              data={repeatPurchaseData}
+              title="การสะสมยอดซื้อซ้ำ"
+            />
+          </div>
+          <RepeatPurchaseComparisonChart
+            repeatData={repeatPurchaseData}
+            salesData={salesData}
+            title="การเปรียบเทียบยอดซื้อซ้ำและอัตราเปอร์เซ็นต์"
           />
           <SortableTable
             title="รายละเอียดยอดซื้อซ้ำแต่ละบริษัท"
@@ -593,9 +621,19 @@ function App() {
       content: (
         <>
           <SummaryCards title="อัตราการปิดการขาย" cards={conversionCards} />
-          <ConversionRateChart
+          <div className="grid grid-cols-1 xl:grid-cols-2 gap-8 mb-8">
+            <ConversionRateChart
+              data={conversionRateData}
+              title="กราฟอัตราการปิดการขาย"
+            />
+            <ConversionRateBarChart
+              data={conversionRateData}
+              title="การเปรียบเทียบอัตราการปิดการขาย"
+            />
+          </div>
+          <ConversionScatterChart
             data={conversionRateData}
-            title="กราฟอัตราการปิดการขาย"
+            title="ความสัมพันธ์ลีดกับอัตราการปิด"
           />
           <DetailedConversionTable
             data={conversionRateData}
@@ -613,9 +651,19 @@ function App() {
       content: (
         <>
           <SummaryCards title="อัตราการซื้อซ้ำ" cards={renewalCards} />
-          <RenewalRateChart
+          <div className="grid grid-cols-1 xl:grid-cols-2 gap-8 mb-8">
+            <RenewalRateChart
+              data={renewalConversionData}
+              title="กราฟอัตราการซื้อซ้ำ"
+            />
+            <RenewalPolarChart
+              data={renewalConversionData}
+              title="การวิเคราะห์ประสิทธิภาพการซื้อซ้ำ"
+            />
+          </div>
+          <RenewalFunnelChart
             data={renewalConversionData}
-            title="กราฟอัตราการซื้อซ้ำ"
+            title="กระบวนการซื้อซ้ำ (Renewal Funnel)"
           />
           <DetailedConversionTable
             data={renewalConversionData}
