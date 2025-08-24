@@ -632,17 +632,20 @@ function App() {
     <div className="min-h-screen bg-gradient-to-br from-sky-50 via-slate-50 to-blue-100 font-sans">
       <div className="max-w-7xl mx-auto px-4 py-8">
         {/* Header */}
-        <div className="text-center mb-12">
-          <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-r from-sky-500 to-blue-600 rounded-full mb-6 shadow-lg">
-            <span className="text-3xl text-white">📊</span>
+        <div className="text-center mb-8 md:mb-12">
+          <div className="inline-flex items-center justify-center w-16 h-16 md:w-20 md:h-20 bg-gradient-to-r from-sky-500 to-blue-600 rounded-full mb-4 md:mb-6 shadow-lg">
+            <span className="text-2xl md:text-3xl text-white">📊</span>
           </div>
-          <h1 className="text-5xl font-bold bg-gradient-to-r from-slate-800 to-slate-600 bg-clip-text text-transparent mb-4">
-            Sales Report - {currentBranchName}
+          <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold bg-gradient-to-r from-slate-800 to-slate-600 bg-clip-text text-transparent mb-3 md:mb-4 px-4">
+            <span className="block sm:inline">Sales Report</span>
+            <span className="block sm:inline sm:ml-2 text-xl sm:text-2xl md:text-3xl lg:text-4xl text-slate-600">
+              {currentBranchName}
+            </span>
           </h1>
-          <p className="text-xl text-slate-600 font-medium">
+          <p className="text-sm sm:text-base md:text-lg lg:text-xl text-slate-600 font-medium px-4">
             รายงานยอดขาย เดือน พฤษภาคม - กรกฎาคม 2025
           </p>
-          <div className="w-24 h-1 bg-gradient-to-r from-sky-500 to-blue-500 mx-auto mt-4 rounded-full"></div>
+          <div className="w-16 md:w-24 h-1 bg-gradient-to-r from-sky-500 to-blue-500 mx-auto mt-3 md:mt-4 rounded-full"></div>
         </div>
 
         {/* Tab Navigation with Branch Selector */}

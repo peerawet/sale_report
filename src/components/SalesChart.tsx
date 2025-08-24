@@ -21,7 +21,7 @@ interface SalesChartProps {
 const SalesChart: React.FC<SalesChartProps> = ({
   data,
   title,
-  height = 400,
+  height = 300,
 }) => {
   const chartData = data.map((item) => ({
     company: item.company,
@@ -47,16 +47,18 @@ const SalesChart: React.FC<SalesChartProps> = ({
   };
 
   return (
-    <div className="mb-12">
+    <div className="mb-8 md:mb-12">
       <div className="bg-white rounded-2xl shadow-xl overflow-hidden border border-slate-200">
-        <div className="px-8 py-6 bg-gradient-to-r from-slate-50 to-sky-50 border-b border-slate-200">
-          <h2 className="text-2xl font-bold text-slate-800">{title}</h2>
-          <p className="text-slate-600 mt-1">
+        <div className="px-4 md:px-6 lg:px-8 py-4 md:py-6 bg-gradient-to-r from-slate-50 to-sky-50 border-b border-slate-200">
+          <h2 className="text-lg md:text-xl lg:text-2xl font-bold text-slate-800">
+            {title}
+          </h2>
+          <p className="text-slate-600 mt-1 text-sm md:text-base">
             แสดงการเปรียบเทียบยอดขายในแต่ละเดือน
           </p>
         </div>
 
-        <div className="p-6">
+        <div className="p-4 md:p-6">
           <ResponsiveContainer width="100%" height={height}>
             <BarChart
               data={chartData}
