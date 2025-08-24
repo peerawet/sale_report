@@ -94,10 +94,8 @@ const RenewalPolarChart: React.FC<RenewalPolarChartProps> = ({
                   data={chartData}
                 >
                   <RadialBar
-                    minAngle={15}
                     label={{ position: 'insideStart', fill: '#fff', fontSize: 12 }}
                     background
-                    clockWise
                     dataKey="value"
                     cornerRadius={10}
                     fill="#8884d8"

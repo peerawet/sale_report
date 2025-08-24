@@ -38,16 +38,14 @@ const SalesPieChart: React.FC<SalesPieChartProps> = ({
       const data = payload[0].payload;
       const total = chartData.reduce((sum, item) => sum + item.value, 0);
       const percentage = ((data.value / total) * 100).toFixed(1);
-      
+
       return (
         <div className="bg-white p-4 border border-slate-200 rounded-lg shadow-lg">
           <p className="font-semibold text-slate-800 mb-2">{data.name}</p>
           <p className="text-sm text-slate-600">
             ยอดขาย: {formatCurrency(data.value)}
           </p>
-          <p className="text-sm text-slate-600">
-            สัดส่วน: {percentage}%
-          </p>
+          <p className="text-sm text-slate-600">สัดส่วน: {percentage}%</p>
         </div>
       );
     }
@@ -76,7 +74,9 @@ const SalesPieChart: React.FC<SalesPieChartProps> = ({
                 outerRadius={80}
                 fill="#8884d8"
                 dataKey="value"
-                label={({ name, percent }) => `${name} ${((percent || 0) * 100).toFixed(1)}%`}
+                label={({ name, percent }) =>
+                  `${name} ${((percent || 0) * 100).toFixed(1)}%`
+                }
                 labelLine={false}
               >
                 {chartData.map((entry, index) => (
