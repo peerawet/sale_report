@@ -22,24 +22,35 @@ const RenewalPolarChart: React.FC<RenewalPolarChartProps> = ({
 }) => {
   const colors = ["#a855f7", "#ec4899", "#06b6d4", "#f59e0b", "#ef4444"];
 
-  const chartData = data.map((item, index) => {
-    const mayRate = getConversionRate(item.may.renewClosed, item.may.renewReceived);
-    const juneRate = getConversionRate(item.june.renewClosed, item.june.renewReceived);
-    const julyRate = getConversionRate(item.july.renewClosed, item.july.renewReceived);
-    const avgRate = (mayRate + juneRate + julyRate) / 3;
-    
-    return {
-      name: item.company,
-      value: avgRate,
-      fill: colors[index % colors.length],
-      mayRate,
-      juneRate,
-      julyRate,
-      mayData: `${item.may.renewClosed}/${item.may.renewReceived}`,
-      juneData: `${item.june.renewClosed}/${item.june.renewReceived}`,
-      julyData: `${item.july.renewClosed}/${item.july.renewReceived}`,
-    };
-  }).sort((a, b) => b.value - a.value); // Sort by renewal rate descending
+  const chartData = data
+    .map((item, index) => {
+      const mayRate = getConversionRate(
+        item.may.renewClosed,
+        item.may.renewReceived
+      );
+      const juneRate = getConversionRate(
+        item.june.renewClosed,
+        item.june.renewReceived
+      );
+      const julyRate = getConversionRate(
+        item.july.renewClosed,
+        item.july.renewReceived
+      );
+      const avgRate = (mayRate + juneRate + julyRate) / 3;
+
+      return {
+        name: item.company,
+        value: avgRate,
+        fill: colors[index % colors.length],
+        mayRate,
+        juneRate,
+        julyRate,
+        mayData: `${item.may.renewClosed}/${item.may.renewReceived}`,
+        juneData: `${item.june.renewClosed}/${item.june.renewReceived}`,
+        julyData: `${item.july.renewClosed}/${item.july.renewReceived}`,
+      };
+    })
+    .sort((a, b) => b.value - a.value); // Sort by renewal rate descending
 
   const CustomTooltip = ({ active, payload }: any) => {
     if (active && payload && payload.length) {
@@ -86,15 +97,19 @@ const RenewalPolarChart: React.FC<RenewalPolarChartProps> = ({
             {/* Radial Chart */}
             <div>
               <ResponsiveContainer width="100%" height={height}>
-                <RadialBarChart 
-                  cx="50%" 
-                  cy="50%" 
-                  innerRadius="20%" 
-                  outerRadius="90%" 
+                <RadialBarChart
+                  cx="50%"
+                  cy="50%"
+                  innerRadius="20%"
+                  outerRadius="90%"
                   data={chartData}
                 >
                   <RadialBar
-                    label={{ position: 'insideStart', fill: '#fff', fontSize: 12 }}
+                    label={{
+                      position: "insideStart",
+                      fill: "#fff",
+                      fontSize: 12,
+                    }}
                     background
                     dataKey="value"
                     cornerRadius={10}
@@ -103,11 +118,11 @@ const RenewalPolarChart: React.FC<RenewalPolarChartProps> = ({
                   <Legend
                     iconSize={10}
                     wrapperStyle={{
-                      top: '50%',
-                      right: '0%',
-                      transform: 'translate(0, -50%)',
-                      lineHeight: '24px',
-                      fontSize: '12px',
+                      top: "50%",
+                      right: "0%",
+                      transform: "translate(0, -50%)",
+                      lineHeight: "24px",
+                      fontSize: "12px",
                     }}
                   />
                   <Tooltip content={<CustomTooltip />} />
@@ -118,7 +133,9 @@ const RenewalPolarChart: React.FC<RenewalPolarChartProps> = ({
             {/* Performance Rankings */}
             <div className="space-y-4">
               <div className="text-center lg:text-left">
-                <h3 className="text-lg font-bold text-slate-800 mb-2">อันดับประสิทธิภาพ</h3>
+                <h3 className="text-lg font-bold text-slate-800 mb-2">
+                  อันดับประสิทธิภาพ
+                </h3>
                 <div className="text-sm text-slate-600">
                   เรียงตามอัตราการซื้อซ้ำเฉลี่ย
                 </div>
@@ -126,7 +143,10 @@ const RenewalPolarChart: React.FC<RenewalPolarChartProps> = ({
 
               <div className="space-y-3">
                 {chartData.map((item, index) => (
-                  <div key={item.name} className="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
+                  <div
+                    key={item.name}
+                    className="flex items-center justify-between p-3 bg-slate-50 rounded-lg"
+                  >
                     <div className="flex items-center space-x-3">
                       <div className="flex items-center justify-center w-8 h-8 rounded-full bg-slate-200 text-slate-700 font-bold text-sm">
                         {index + 1}
@@ -136,7 +156,9 @@ const RenewalPolarChart: React.FC<RenewalPolarChartProps> = ({
                           className="w-3 h-3 rounded-full"
                           style={{ backgroundColor: item.fill }}
                         ></div>
-                        <span className="text-sm font-medium text-slate-700">{item.name}</span>
+                        <span className="text-sm font-medium text-slate-700">
+                          {item.name}
+                        </span>
                       </div>
                     </div>
                     <div className="text-right">
@@ -144,9 +166,13 @@ const RenewalPolarChart: React.FC<RenewalPolarChartProps> = ({
                         {item.value.toFixed(1)}%
                       </div>
                       <div className="text-xs text-slate-500">
-                        {item.value >= 50 ? '🏆 ดีเยี่ยม' : 
-                         item.value >= 30 ? '👍 ดี' : 
-                         item.value >= 20 ? '📈 ปานกลาง' : '⚠️ ต้องปรับปรุง'}
+                        {item.value >= 50
+                          ? "🏆 ดีเยี่ยม"
+                          : item.value >= 30
+                          ? "👍 ดี"
+                          : item.value >= 20
+                          ? "📈 ปานกลาง"
+                          : "⚠️ ต้องปรับปรุง"}
                       </div>
                     </div>
                   </div>
@@ -155,30 +181,40 @@ const RenewalPolarChart: React.FC<RenewalPolarChartProps> = ({
 
               {/* Performance Metrics */}
               <div className="bg-gradient-to-r from-purple-100 to-pink-100 rounded-lg p-4 mt-4">
-                <div className="text-sm font-semibold text-slate-800 mb-2">สรุปประสิทธิภาพ</div>
+                <div className="text-sm font-semibold text-slate-800 mb-2">
+                  สรุปประสิทธิภาพ
+                </div>
                 <div className="grid grid-cols-2 gap-2 text-xs">
                   <div>
                     <span className="text-slate-600">สูงสุด:</span>
                     <span className="font-bold text-emerald-600 ml-1">
-                      {Math.max(...chartData.map(d => d.value)).toFixed(1)}%
+                      {Math.max(...chartData.map((d) => d.value)).toFixed(1)}%
                     </span>
                   </div>
                   <div>
                     <span className="text-slate-600">ต่ำสุด:</span>
                     <span className="font-bold text-red-600 ml-1">
-                      {Math.min(...chartData.map(d => d.value)).toFixed(1)}%
+                      {Math.min(...chartData.map((d) => d.value)).toFixed(1)}%
                     </span>
                   </div>
                   <div>
                     <span className="text-slate-600">เฉลี่ย:</span>
                     <span className="font-bold text-slate-800 ml-1">
-                      {(chartData.reduce((sum, d) => sum + d.value, 0) / chartData.length).toFixed(1)}%
+                      {(
+                        chartData.reduce((sum, d) => sum + d.value, 0) /
+                        chartData.length
+                      ).toFixed(1)}
+                      %
                     </span>
                   </div>
                   <div>
                     <span className="text-slate-600">ส่วนเบี่ยงเบน:</span>
                     <span className="font-bold text-slate-800 ml-1">
-                      {(Math.max(...chartData.map(d => d.value)) - Math.min(...chartData.map(d => d.value))).toFixed(1)}%
+                      {(
+                        Math.max(...chartData.map((d) => d.value)) -
+                        Math.min(...chartData.map((d) => d.value))
+                      ).toFixed(1)}
+                      %
                     </span>
                   </div>
                 </div>
