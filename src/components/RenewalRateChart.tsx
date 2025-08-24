@@ -50,7 +50,9 @@ const RenewalRateChart: React.FC<RenewalRateChartProps> = ({
     <div className="mb-8 md:mb-12">
       <div className="bg-white rounded-2xl shadow-xl overflow-hidden border border-slate-200">
         <div className="px-4 md:px-6 lg:px-8 py-4 md:py-6 bg-gradient-to-r from-purple-50 to-pink-50 border-b border-slate-200">
-          <h2 className="text-lg md:text-xl lg:text-2xl font-bold text-slate-800">{title}</h2>
+          <h2 className="text-lg md:text-xl lg:text-2xl font-bold text-slate-800">
+            {title}
+          </h2>
           <p className="text-slate-600 mt-1 text-sm md:text-base">
             แสดงการเปรียบเทียบอัตราการซื้อซ้ำในรูปแบบ Radar Chart
           </p>

@@ -360,8 +360,12 @@ const DetailedConversionTable: React.FC<DetailedConversionTableProps> = ({
   return (
     <div className="mb-8 md:mb-12">
       <div className="bg-white rounded-2xl shadow-xl overflow-hidden border border-slate-200">
-        <div className={`px-4 md:px-6 lg:px-8 py-4 md:py-6 ${colors.header} border-b border-slate-200`}>
-          <h2 className="text-lg md:text-xl lg:text-2xl font-bold text-slate-800">{title}</h2>
+        <div
+          className={`px-4 md:px-6 lg:px-8 py-4 md:py-6 ${colors.header} border-b border-slate-200`}
+        >
+          <h2 className="text-lg md:text-xl lg:text-2xl font-bold text-slate-800">
+            {title}
+          </h2>
           <p className="text-slate-600 mt-1 text-sm md:text-base">{subtitle}</p>
         </div>
 
@@ -397,28 +401,52 @@ const DetailedConversionTable: React.FC<DetailedConversionTableProps> = ({
               <tr className="bg-rose-25">
                 <th className="px-3 md:px-4 lg:px-6 py-2 md:py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider"></th>
                 <th className="px-1 md:px-2 lg:px-3 py-2 md:py-3 text-center text-xs font-medium text-slate-500 uppercase tracking-wider">
-                  <span className="hidden md:inline">{isRenewal ? "RENEW รับมา" : "รับมา"}</span>
-                  <span className="md:hidden">{isRenewal ? "RN รับ" : "รับ"}</span>
+                  <span className="hidden md:inline">
+                    {isRenewal ? "RENEW รับมา" : "รับมา"}
+                  </span>
+                  <span className="md:hidden">
+                    {isRenewal ? "RN รับ" : "รับ"}
+                  </span>
                 </th>
                 <th className="px-1 md:px-2 lg:px-3 py-2 md:py-3 text-center text-xs font-medium text-slate-500 uppercase tracking-wider border-r border-slate-200">
-                  <span className="hidden md:inline">{isRenewal ? "RENEW ปิดได้ (%)" : "ปิดได้ (%)"}</span>
-                  <span className="md:hidden">{isRenewal ? "RN ปิด" : "ปิด"}</span>
+                  <span className="hidden md:inline">
+                    {isRenewal ? "RENEW ปิดได้ (%)" : "ปิดได้ (%)"}
+                  </span>
+                  <span className="md:hidden">
+                    {isRenewal ? "RN ปิด" : "ปิด"}
+                  </span>
                 </th>
                 <th className="px-1 md:px-2 lg:px-3 py-2 md:py-3 text-center text-xs font-medium text-slate-500 uppercase tracking-wider">
-                  <span className="hidden md:inline">{isRenewal ? "RENEW รับมา" : "รับมา"}</span>
-                  <span className="md:hidden">{isRenewal ? "RN รับ" : "รับ"}</span>
+                  <span className="hidden md:inline">
+                    {isRenewal ? "RENEW รับมา" : "รับมา"}
+                  </span>
+                  <span className="md:hidden">
+                    {isRenewal ? "RN รับ" : "รับ"}
+                  </span>
                 </th>
                 <th className="px-1 md:px-2 lg:px-3 py-2 md:py-3 text-center text-xs font-medium text-slate-500 uppercase tracking-wider border-r border-slate-200">
-                  <span className="hidden md:inline">{isRenewal ? "RENEW ปิดได้ (%)" : "ปิดได้ (%)"}</span>
-                  <span className="md:hidden">{isRenewal ? "RN ปิด" : "ปิด"}</span>
+                  <span className="hidden md:inline">
+                    {isRenewal ? "RENEW ปิดได้ (%)" : "ปิดได้ (%)"}
+                  </span>
+                  <span className="md:hidden">
+                    {isRenewal ? "RN ปิด" : "ปิด"}
+                  </span>
                 </th>
                 <th className="px-1 md:px-2 lg:px-3 py-2 md:py-3 text-center text-xs font-medium text-slate-500 uppercase tracking-wider">
-                  <span className="hidden md:inline">{isRenewal ? "RENEW รับมา" : "รับมา"}</span>
-                  <span className="md:hidden">{isRenewal ? "RN รับ" : "รับ"}</span>
+                  <span className="hidden md:inline">
+                    {isRenewal ? "RENEW รับมา" : "รับมา"}
+                  </span>
+                  <span className="md:hidden">
+                    {isRenewal ? "RN รับ" : "รับ"}
+                  </span>
                 </th>
                 <th className="px-1 md:px-2 lg:px-3 py-2 md:py-3 text-center text-xs font-medium text-slate-500 uppercase tracking-wider border-r border-slate-200">
-                  <span className="hidden md:inline">{isRenewal ? "RENEW ปิดได้ (%)" : "ปิดได้ (%)"}</span>
-                  <span className="md:hidden">{isRenewal ? "RN ปิด" : "ปิด"}</span>
+                  <span className="hidden md:inline">
+                    {isRenewal ? "RENEW ปิดได้ (%)" : "ปิดได้ (%)"}
+                  </span>
+                  <span className="md:hidden">
+                    {isRenewal ? "RN ปิด" : "ปิด"}
+                  </span>
                 </th>
                 <th className="px-3 md:px-4 lg:px-6 py-2 md:py-3 text-center text-xs font-medium text-slate-500 uppercase tracking-wider">
                   %
