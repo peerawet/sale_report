@@ -4,8 +4,6 @@ import {
   formatCurrency,
   formatPercent,
   getBranchTotalRevenue,
-  getBranchTotalNew,
-  getBranchTotalRenew,
   getAllBranchesMTD,
   getAllBranchesTotalTarget,
   type BranchData,
@@ -25,10 +23,6 @@ import {
   RadialBarChart,
   RadialBar,
   Legend,
-  LineChart,
-  Line,
-  Area,
-  AreaChart,
 } from "recharts";
 
 // Color palette - Deep ocean theme
@@ -65,12 +59,6 @@ function App() {
   const pieData = branchesData.map((b, i) => ({
     name: b.code,
     value: b.mtdRevenue,
-    fill: COLORS.branches[i],
-  }));
-
-  const radialData = branchesData.map((b, i) => ({
-    name: b.code,
-    value: b.achievePercent,
     fill: COLORS.branches[i],
   }));
 
@@ -186,7 +174,10 @@ function App() {
                 <BarChart data={branchChartData}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
                   <XAxis dataKey="name" stroke="#94a3b8" />
-                  <YAxis stroke="#94a3b8" tickFormatter={(v) => `${v / 1000}K`} />
+                  <YAxis
+                    stroke="#94a3b8"
+                    tickFormatter={(v) => `${v / 1000}K`}
+                  />
                   <Tooltip
                     contentStyle={{
                       backgroundColor: "#1e293b",
@@ -224,7 +215,7 @@ function App() {
                     paddingAngle={4}
                     dataKey="value"
                     label={({ name, percent }) =>
-                      `${name} ${(percent * 100).toFixed(0)}%`
+                      `${name} ${percent ? (percent * 100).toFixed(0) : 0}%`
                     }
                   >
                     {pieData.map((entry, index) => (
@@ -324,7 +315,9 @@ function App() {
               {/* Branch Conversion Rates */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
                 <div className="bg-slate-800/50 rounded-xl p-4 text-center">
-                  <p className="text-slate-400 text-sm mb-1">Closed Ratio NEW</p>
+                  <p className="text-slate-400 text-sm mb-1">
+                    Closed Ratio NEW
+                  </p>
                   <p className="text-2xl font-bold text-emerald-400">
                     {formatPercent(selectedBranchData.closedRatioNew)}
                   </p>
@@ -431,8 +424,10 @@ function App() {
                       border: "1px solid #334155",
                       borderRadius: "12px",
                     }}
-                    formatter={(value: number, name: string, props: any) => [
-                      `${branchesData.find((b) => b.code === props.payload.name)?.addOnPercent.toFixed(1)}%`,
+                    formatter={(_value: number, _name: string, props: any) => [
+                      `${branchesData
+                        .find((b) => b.code === props.payload.name)
+                        ?.addOnPercent.toFixed(1)}%`,
                       props.payload.name,
                     ]}
                   />
@@ -663,7 +658,9 @@ function BranchCard({
         />
         <div>
           <h3 className="font-bold text-slate-200">{branch.name}</h3>
-          <p className="text-sm text-slate-400">{branch.staff.length} พนักงาน</p>
+          <p className="text-sm text-slate-400">
+            {branch.staff.length} พนักงาน
+          </p>
         </div>
       </div>
 
