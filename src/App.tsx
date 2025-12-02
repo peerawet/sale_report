@@ -1,723 +1,763 @@
-import { getBranchData, BRANCHES } from "./data/MRS_BRANCH";
-import type {
-  SalesData,
-  RepeatPurchaseData,
-  BranchType,
-} from "./data/MRS_BRANCH";
 import { useState } from "react";
 import {
+  branchesData,
   formatCurrency,
-  getTotalByMonth,
-  getRepeatPurchaseTotalByMonth,
-  getTotalByCompany,
-  getRepeatPurchaseTotalByCompany,
-  getGrandTotal,
-  getGrandTotalRepeatPurchase,
-  getMonthlyGrowth,
-  getRepeatPurchaseRate,
-  getTotalNewReceived,
-  getTotalNewClosed,
-  getOverallConversionRate,
-  getTotalRenewReceived,
-  getTotalRenewClosed,
-  getOverallRenewalRate,
-} from "./utils/calculations";
-import SummaryCards from "./components/SummaryCards";
-import SortableTable from "./components/SortableTable";
-import DetailedConversionTable from "./components/DetailedConversionTable";
+  formatPercent,
+  getBranchTotalRevenue,
+  getBranchTotalNew,
+  getBranchTotalRenew,
+  getAllBranchesMTD,
+  getAllBranchesTotalTarget,
+  type BranchData,
+  type StaffData,
+} from "./data/november2025";
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  PieChart,
+  Pie,
+  Cell,
+  RadialBarChart,
+  RadialBar,
+  Legend,
+  LineChart,
+  Line,
+  Area,
+  AreaChart,
+} from "recharts";
 
-import SalesChart from "./components/SalesChart";
-import SalesPieChart from "./components/SalesPieChart";
-import SalesTrendChart from "./components/SalesTrendChart";
-import SalesDonutChart from "./components/SalesDonutChart";
-import RepeatPurchaseChart from "./components/RepeatPurchaseChart";
-import RepeatPurchaseComparisonChart from "./components/RepeatPurchaseComparisonChart";
-import RepeatPurchaseStackedChart from "./components/RepeatPurchaseStackedChart";
-import ConversionRateChart from "./components/ConversionRateChart";
-import ConversionRateBarChart from "./components/ConversionRateBarChart";
-import ConversionScatterChart from "./components/ConversionScatterChart";
-import RenewalRateChart from "./components/RenewalRateChart";
-import RenewalPolarChart from "./components/RenewalPolarChart";
-import RenewalFunnelChart from "./components/RenewalFunnelChart";
-import TabNavigation from "./components/TabNavigation";
-import type { TabItem } from "./components/TabNavigation";
+// Color palette - Deep ocean theme
+const COLORS = {
+  primary: "#0f172a",
+  secondary: "#1e293b",
+  accent: "#f59e0b",
+  success: "#10b981",
+  danger: "#ef4444",
+  info: "#3b82f6",
+  purple: "#8b5cf6",
+  pink: "#ec4899",
+  cyan: "#06b6d4",
+  branches: ["#f59e0b", "#10b981", "#3b82f6", "#ec4899"],
+};
 
 function App() {
-  const [selectedBranch, setSelectedBranch] =
-    useState<BranchType>("MRS_BRANCH");
-  const {
-    salesData,
-    repeatPurchaseData,
-    conversionRateData,
-    renewalConversionData,
-  } = getBranchData(selectedBranch);
+  const [selectedBranch, setSelectedBranch] = useState<string | null>(null);
 
-  const currentBranchName = BRANCHES[selectedBranch];
+  const totalMTD = getAllBranchesMTD();
+  const totalTarget = getAllBranchesTotalTarget();
+  const overallAchieve = (totalMTD / totalTarget) * 100;
 
-  // Sales Summary Cards Data
-  const salesCards = [
-    {
-      title: "พฤษภาคม",
-      value: formatCurrency(getTotalByMonth(salesData, "may")),
-      color: "bg-emerald-500",
-    },
-    {
-      title: "มิถุนายน",
-      value: formatCurrency(getTotalByMonth(salesData, "june")),
-      subtitle: `${getMonthlyGrowth(
-        getTotalByMonth(salesData, "june"),
-        getTotalByMonth(salesData, "may")
-      ).toFixed(1)}% จากเดือนก่อน`,
-      color: "bg-sky-500",
-    },
-    {
-      title: "กรกฎาคม",
-      value: formatCurrency(getTotalByMonth(salesData, "july")),
-      subtitle: `${getMonthlyGrowth(
-        getTotalByMonth(salesData, "july"),
-        getTotalByMonth(salesData, "june")
-      ).toFixed(1)}% จากเดือนก่อน`,
-      color: "bg-violet-500",
-    },
-    {
-      title: "รวมทั้งหมด",
-      value: formatCurrency(getGrandTotal(salesData)),
-      color: "bg-gradient-to-r from-sky-500 to-blue-600",
-      isGradient: true,
-    },
-  ];
+  // Prepare chart data
+  const branchChartData = branchesData.map((b, i) => ({
+    name: b.code,
+    revenue: getBranchTotalRevenue(b),
+    mtd: b.mtdRevenue,
+    target: b.targetRevenue,
+    achieve: b.achievePercent,
+    fill: COLORS.branches[i],
+  }));
 
-  // Repeat Purchase Cards Data
-  const repeatCards = [
-    {
-      title: "พฤษภาคม (ซื้อซ้ำ)",
-      value: formatCurrency(
-        getRepeatPurchaseTotalByMonth(repeatPurchaseData, "may")
-      ),
-      subtitle: `${getRepeatPurchaseRate(
-        getRepeatPurchaseTotalByMonth(repeatPurchaseData, "may"),
-        getTotalByMonth(salesData, "may")
-      ).toFixed(1)}% ของยอดขายรวม`,
-      color: "bg-amber-500",
-    },
-    {
-      title: "มิถุนายน (ซื้อซ้ำ)",
-      value: formatCurrency(
-        getRepeatPurchaseTotalByMonth(repeatPurchaseData, "june")
-      ),
-      subtitle: `${getRepeatPurchaseRate(
-        getRepeatPurchaseTotalByMonth(repeatPurchaseData, "june"),
-        getTotalByMonth(salesData, "june")
-      ).toFixed(1)}% ของยอดขายรวม`,
-      color: "bg-teal-500",
-    },
-    {
-      title: "กรกฎาคม (ซื้อซ้ำ)",
-      value: formatCurrency(
-        getRepeatPurchaseTotalByMonth(repeatPurchaseData, "july")
-      ),
-      subtitle: `${getRepeatPurchaseRate(
-        getRepeatPurchaseTotalByMonth(repeatPurchaseData, "july"),
-        getTotalByMonth(salesData, "july")
-      ).toFixed(1)}% ของยอดขายรวม`,
-      color: "bg-indigo-500",
-    },
-    {
-      title: "รวมซื้อซ้ำทั้งหมด",
-      value: formatCurrency(getGrandTotalRepeatPurchase(repeatPurchaseData)),
-      subtitle: `${getRepeatPurchaseRate(
-        getGrandTotalRepeatPurchase(repeatPurchaseData),
-        getGrandTotal(salesData)
-      ).toFixed(1)}% ของยอดขายรวม`,
-      color: "bg-gradient-to-r from-amber-500 to-orange-500",
-      isGradient: true,
-    },
-  ];
+  const pieData = branchesData.map((b, i) => ({
+    name: b.code,
+    value: b.mtdRevenue,
+    fill: COLORS.branches[i],
+  }));
 
-  // Conversion Rate Cards Data
-  const conversionCards = [
-    {
-      title: "พฤษภาคม",
-      value: `${getOverallConversionRate(conversionRateData, "may").toFixed(
-        1
-      )}%`,
-      subtitle: `${getTotalNewClosed(
-        conversionRateData,
-        "may"
-      )} / ${getTotalNewReceived(conversionRateData, "may")} ลีด`,
-      color: "bg-rose-500",
-    },
-    {
-      title: "มิถุนายน",
-      value: `${getOverallConversionRate(conversionRateData, "june").toFixed(
-        1
-      )}%`,
-      subtitle: `${getTotalNewClosed(
-        conversionRateData,
-        "june"
-      )} / ${getTotalNewReceived(conversionRateData, "june")} ลีด`,
-      color: "bg-blue-500",
-    },
-    {
-      title: "กรกฎาคม",
-      value: `${getOverallConversionRate(conversionRateData, "july").toFixed(
-        1
-      )}%`,
-      subtitle: `${getTotalNewClosed(
-        conversionRateData,
-        "july"
-      )} / ${getTotalNewReceived(conversionRateData, "july")} ลีด`,
-      color: "bg-emerald-500",
-    },
-    {
-      title: "อัตราเฉลี่ยรวม",
-      value: `${(
-        (getOverallConversionRate(conversionRateData, "may") +
-          getOverallConversionRate(conversionRateData, "june") +
-          getOverallConversionRate(conversionRateData, "july")) /
-        3
-      ).toFixed(1)}%`,
-      subtitle: `${
-        getTotalNewClosed(conversionRateData, "may") +
-        getTotalNewClosed(conversionRateData, "june") +
-        getTotalNewClosed(conversionRateData, "july")
-      } / ${
-        getTotalNewReceived(conversionRateData, "may") +
-        getTotalNewReceived(conversionRateData, "june") +
-        getTotalNewReceived(conversionRateData, "july")
-      } ลีดรวม`,
-      color: "bg-gradient-to-r from-emerald-500 to-teal-500",
-      isGradient: true,
-    },
-  ];
+  const radialData = branchesData.map((b, i) => ({
+    name: b.code,
+    value: b.achievePercent,
+    fill: COLORS.branches[i],
+  }));
 
-  // Renewal Rate Cards Data
-  const renewalCards = [
-    {
-      title: "พฤษภาคม",
-      value: `${getOverallRenewalRate(renewalConversionData, "may").toFixed(
-        1
-      )}%`,
-      subtitle: `${getTotalRenewClosed(
-        renewalConversionData,
-        "may"
-      )} / ${getTotalRenewReceived(renewalConversionData, "may")} Renewal`,
-      color: "bg-purple-500",
-    },
-    {
-      title: "มิถุนายน",
-      value: `${getOverallRenewalRate(renewalConversionData, "june").toFixed(
-        1
-      )}%`,
-      subtitle: `${getTotalRenewClosed(
-        renewalConversionData,
-        "june"
-      )} / ${getTotalRenewReceived(renewalConversionData, "june")} Renewal`,
-      color: "bg-pink-500",
-    },
-    {
-      title: "กรกฎาคม",
-      value: `${getOverallRenewalRate(renewalConversionData, "july").toFixed(
-        1
-      )}%`,
-      subtitle: `${getTotalRenewClosed(
-        renewalConversionData,
-        "july"
-      )} / ${getTotalRenewReceived(renewalConversionData, "july")} Renewal`,
-      color: "bg-cyan-500",
-    },
-    {
-      title: "อัตราเฉลี่ยรวม",
-      value: `${(
-        (getOverallRenewalRate(renewalConversionData, "may") +
-          getOverallRenewalRate(renewalConversionData, "june") +
-          getOverallRenewalRate(renewalConversionData, "july")) /
-        3
-      ).toFixed(1)}%`,
-      subtitle: `${
-        getTotalRenewClosed(renewalConversionData, "may") +
-        getTotalRenewClosed(renewalConversionData, "june") +
-        getTotalRenewClosed(renewalConversionData, "july")
-      } / ${
-        getTotalRenewReceived(renewalConversionData, "may") +
-        getTotalRenewReceived(renewalConversionData, "june") +
-        getTotalRenewReceived(renewalConversionData, "july")
-      } Renewal รวม`,
-      color: "bg-gradient-to-r from-purple-500 to-pink-500",
-      isGradient: true,
-    },
-  ];
-
-  // Sales Table Columns
-  const salesColumns = [
-    {
-      key: "company",
-      label: "บริษัท",
-      sortable: true,
-      render: (item: SalesData, index: number) => (
-        <div className="flex items-center">
-          <div
-            className={`w-4 h-4 rounded-full mr-4 ${
-              index === 0
-                ? "bg-emerald-500"
-                : index === 1
-                ? "bg-sky-500"
-                : index === 2
-                ? "bg-violet-500"
-                : index === 3
-                ? "bg-amber-500"
-                : "bg-rose-500"
-            }`}
-          ></div>
-          <div className="text-sm font-semibold text-slate-900">
-            {item.company}
-          </div>
-        </div>
-      ),
-    },
-    {
-      key: "may",
-      label: "พฤษภาคม",
-      sortable: true,
-      align: "right" as const,
-      render: (item: SalesData) => (
-        <span className="text-slate-900 font-medium">
-          {formatCurrency(item.may)}
-        </span>
-      ),
-    },
-    {
-      key: "june",
-      label: "มิถุนายน",
-      sortable: true,
-      align: "right" as const,
-      render: (item: SalesData) => {
-        const growth = getMonthlyGrowth(item.june, item.may);
-        return (
-          <div className="text-right">
-            <div className="text-slate-900 font-medium">
-              {formatCurrency(item.june)}
-            </div>
-            <div
-              className={`text-xs font-medium mt-1 ${
-                growth >= 0 ? "text-emerald-600" : "text-rose-600"
-              }`}
-            >
-              {growth >= 0 ? "+" : ""}
-              {growth.toFixed(1)}%
-            </div>
-          </div>
-        );
-      },
-    },
-    {
-      key: "july",
-      label: "กรกฎาคม",
-      sortable: true,
-      align: "right" as const,
-      render: (item: SalesData) => {
-        const growth = getMonthlyGrowth(item.july, item.june);
-        return (
-          <div className="text-right">
-            <div className="text-slate-900 font-medium">
-              {formatCurrency(item.july)}
-            </div>
-            <div
-              className={`text-xs font-medium mt-1 ${
-                growth >= 0 ? "text-emerald-600" : "text-rose-600"
-              }`}
-            >
-              {growth >= 0 ? "+" : ""}
-              {growth.toFixed(1)}%
-            </div>
-          </div>
-        );
-      },
-    },
-    {
-      key: "total",
-      label: "รวม",
-      sortable: true,
-      align: "right" as const,
-      render: (item: SalesData) => (
-        <span className="text-slate-900 font-bold">
-          {formatCurrency(getTotalByCompany(item))}
-        </span>
-      ),
-    },
-    {
-      key: "trend",
-      label: "เทรนด์",
-      align: "center" as const,
-      render: (item: SalesData) => {
-        const julyGrowth = getMonthlyGrowth(item.july, item.june);
-        const isPositiveTrend = julyGrowth > 0;
-        return (
-          <span
-            className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold ${
-              isPositiveTrend
-                ? "bg-emerald-100 text-emerald-800"
-                : "bg-rose-100 text-rose-800"
-            }`}
-          >
-            {isPositiveTrend ? "📈 เพิ่มขึ้น" : "📉 ลดลง"}
-          </span>
-        );
-      },
-    },
-  ];
-
-  // Repeat Purchase Table Columns
-  const repeatColumns = [
-    {
-      key: "company",
-      label: "บริษัท",
-      sortable: true,
-      render: (item: RepeatPurchaseData, index: number) => (
-        <div className="flex items-center">
-          <div
-            className={`w-4 h-4 rounded-full mr-4 ${
-              index === 0
-                ? "bg-amber-500"
-                : index === 1
-                ? "bg-teal-500"
-                : index === 2
-                ? "bg-indigo-500"
-                : index === 3
-                ? "bg-orange-500"
-                : "bg-rose-500"
-            }`}
-          ></div>
-          <div className="text-sm font-semibold text-slate-900">
-            {item.company}
-          </div>
-        </div>
-      ),
-    },
-    {
-      key: "may",
-      label: "พฤษภาคม (ซื้อซ้ำ)",
-      sortable: true,
-      align: "right" as const,
-      render: (item: RepeatPurchaseData, index: number) => {
-        const salesCompany = salesData[index];
-        return (
-          <div className="text-right">
-            <div className="text-slate-900 font-medium">
-              {formatCurrency(item.may)}
-            </div>
-            <div className="text-xs text-amber-600 font-medium mt-1">
-              {getRepeatPurchaseRate(item.may, salesCompany.may).toFixed(1)}%
-            </div>
-          </div>
-        );
-      },
-    },
-    {
-      key: "june",
-      label: "มิถุนายน (ซื้อซ้ำ)",
-      sortable: true,
-      align: "right" as const,
-      render: (item: RepeatPurchaseData, index: number) => {
-        const salesCompany = salesData[index];
-        return (
-          <div className="text-right">
-            <div className="text-slate-900 font-medium">
-              {formatCurrency(item.june)}
-            </div>
-            <div className="text-xs text-teal-600 font-medium mt-1">
-              {getRepeatPurchaseRate(item.june, salesCompany.june).toFixed(1)}%
-            </div>
-          </div>
-        );
-      },
-    },
-    {
-      key: "july",
-      label: "กรกฎาคม (ซื้อซ้ำ)",
-      sortable: true,
-      align: "right" as const,
-      render: (item: RepeatPurchaseData, index: number) => {
-        const salesCompany = salesData[index];
-        return (
-          <div className="text-right">
-            <div className="text-slate-900 font-medium">
-              {formatCurrency(item.july)}
-            </div>
-            <div className="text-xs text-indigo-600 font-medium mt-1">
-              {getRepeatPurchaseRate(item.july, salesCompany.july).toFixed(1)}%
-            </div>
-          </div>
-        );
-      },
-    },
-    {
-      key: "total",
-      label: "รวมซื้อซ้ำ",
-      sortable: true,
-      align: "right" as const,
-      render: (item: RepeatPurchaseData) => (
-        <span className="text-slate-900 font-bold">
-          {formatCurrency(getRepeatPurchaseTotalByCompany(item))}
-        </span>
-      ),
-    },
-    {
-      key: "rate",
-      label: "% ของยอดขายรวม",
-      align: "center" as const,
-      render: (item: RepeatPurchaseData, index: number) => {
-        const total = getRepeatPurchaseTotalByCompany(item);
-        const salesCompany = salesData[index];
-        const salesTotalByCompany = getTotalByCompany(salesCompany);
-        const repeatRate = getRepeatPurchaseRate(total, salesTotalByCompany);
-
-        return (
-          <span
-            className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold ${
-              repeatRate >= 30
-                ? "bg-emerald-100 text-emerald-800"
-                : repeatRate >= 20
-                ? "bg-amber-100 text-amber-800"
-                : "bg-rose-100 text-rose-800"
-            }`}
-          >
-            {repeatRate.toFixed(1)}%
-          </span>
-        );
-      },
-    },
-  ];
-
-  // Sales Table Footer
-  const salesFooter = (
-    <tr>
-      <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-slate-900">
-        รวมทั้งหมด
-      </td>
-      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-bold text-slate-900">
-        {formatCurrency(getTotalByMonth(salesData, "may"))}
-      </td>
-      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-bold text-slate-900">
-        {formatCurrency(getTotalByMonth(salesData, "june"))}
-      </td>
-      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-bold text-slate-900">
-        {formatCurrency(getTotalByMonth(salesData, "july"))}
-      </td>
-      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-bold text-slate-900">
-        {formatCurrency(getGrandTotal(salesData))}
-      </td>
-      <td className="px-6 py-4 whitespace-nowrap text-center">
-        <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-sky-100 text-sky-800">
-          📊 สรุป
-        </span>
-      </td>
-    </tr>
-  );
-
-  // Repeat Purchase Table Footer
-  const repeatFooter = (
-    <tr>
-      <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-slate-900">
-        รวมทั้งหมด
-      </td>
-      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-bold text-slate-900">
-        {formatCurrency(
-          getRepeatPurchaseTotalByMonth(repeatPurchaseData, "may")
-        )}
-      </td>
-      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-bold text-slate-900">
-        {formatCurrency(
-          getRepeatPurchaseTotalByMonth(repeatPurchaseData, "june")
-        )}
-      </td>
-      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-bold text-slate-900">
-        {formatCurrency(
-          getRepeatPurchaseTotalByMonth(repeatPurchaseData, "july")
-        )}
-      </td>
-      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-bold text-slate-900">
-        {formatCurrency(getGrandTotalRepeatPurchase(repeatPurchaseData))}
-      </td>
-      <td className="px-6 py-4 whitespace-nowrap text-center">
-        <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-sky-100 text-sky-800">
-          🔄{" "}
-          {getRepeatPurchaseRate(
-            getGrandTotalRepeatPurchase(repeatPurchaseData),
-            getGrandTotal(salesData)
-          ).toFixed(1)}
-          %
-        </span>
-      </td>
-    </tr>
-  );
-
-  // Create tab content
-  const tabs: TabItem[] = [
-    {
-      id: "sales",
-      label: "สรุปยอดขายรวม",
-      icon: "💰",
-      content: (
-        <>
-          <SummaryCards title="สรุปยอดขายรวม" cards={salesCards} />
-          <div className="grid grid-cols-1 xl:grid-cols-2 gap-8 mb-8">
-            <SalesChart data={salesData} title="กราฟยอดขายรายเดือน" />
-            <SalesPieChart data={salesData} title="สัดส่วนยอดขายแต่ละบริษัท" />
-          </div>
-          <SalesTrendChart data={salesData} title="เทรนด์ยอดขายตามเวลา" />
-          <SalesDonutChart
-            data={salesData}
-            title="การวิเคราะห์ยอดขายและการเติบโต"
-          />
-          <SortableTable
-            title="รายละเอียดยอดขายแต่ละบริษัท"
-            subtitle="คลิกที่หัวคอลัมน์เพื่อเรียงลำดับข้อมูล"
-            data={salesData}
-            columns={salesColumns}
-            theme="sales"
-            footer={salesFooter}
-          />
-        </>
-      ),
-    },
-    {
-      id: "repeat",
-      label: "รายงานยอดซื้อซ้ำ",
-      icon: "🔄",
-      content: (
-        <>
-          <SummaryCards title="รายงานยอดซื้อซ้ำ" cards={repeatCards} />
-          <div className="grid grid-cols-1 xl:grid-cols-2 gap-8 mb-8">
-            <RepeatPurchaseChart
-              data={repeatPurchaseData}
-              title="กราฟยอดซื้อซ้ำรายเดือน"
-            />
-            <RepeatPurchaseStackedChart
-              data={repeatPurchaseData}
-              title="การสะสมยอดซื้อซ้ำ"
-            />
-          </div>
-          <RepeatPurchaseComparisonChart
-            repeatData={repeatPurchaseData}
-            salesData={salesData}
-            title="การเปรียบเทียบยอดซื้อซ้ำและอัตราเปอร์เซ็นต์"
-          />
-          <SortableTable
-            title="รายละเอียดยอดซื้อซ้ำแต่ละบริษัท"
-            subtitle="คลิกที่หัวคอลัมน์เพื่อเรียงลำดับข้อมูล"
-            data={repeatPurchaseData}
-            columns={repeatColumns}
-            theme="repeat"
-            footer={repeatFooter}
-          />
-        </>
-      ),
-    },
-    {
-      id: "conversion",
-      label: "อัตราการปิดการขาย",
-      icon: "📈",
-      content: (
-        <>
-          <SummaryCards title="อัตราการปิดการขาย" cards={conversionCards} />
-          <div className="grid grid-cols-1 xl:grid-cols-2 gap-8 mb-8">
-            <ConversionRateChart
-              data={conversionRateData}
-              title="กราฟอัตราการปิดการขาย"
-            />
-            <ConversionRateBarChart
-              data={conversionRateData}
-              title="การเปรียบเทียบอัตราการปิดการขาย"
-            />
-          </div>
-          <ConversionScatterChart
-            data={conversionRateData}
-            title="ความสัมพันธ์ลีดกับอัตราการปิด"
-          />
-          <DetailedConversionTable
-            data={conversionRateData}
-            type="conversion"
-            title="รายละเอียดอัตราการปิดการขายแต่ละบริษัท"
-            subtitle="แสดงจำนวนลีดที่รับเข้ามาและปิดได้ในแต่ละเดือน"
-          />
-        </>
-      ),
-    },
-    {
-      id: "renewal",
-      label: "อัตราการซื้อซ้ำ",
-      icon: "🔁",
-      content: (
-        <>
-          <SummaryCards title="อัตราการซื้อซ้ำ" cards={renewalCards} />
-          <div className="grid grid-cols-1 xl:grid-cols-2 gap-8 mb-8">
-            <RenewalRateChart
-              data={renewalConversionData}
-              title="กราฟอัตราการซื้อซ้ำ"
-            />
-            <RenewalPolarChart
-              data={renewalConversionData}
-              title="การวิเคราะห์ประสิทธิภาพการซื้อซ้ำ"
-            />
-          </div>
-          <RenewalFunnelChart
-            data={renewalConversionData}
-            title="กระบวนการซื้อซ้ำ (Renewal Funnel)"
-          />
-          <DetailedConversionTable
-            data={renewalConversionData}
-            type="renewal"
-            title="รายละเอียดอัตราการซื้อซ้ำแต่ละบริษัท"
-            subtitle="แสดงจำนวนลูกค้าเก่าที่ติดต่อมาและซื้อซ้ำได้ในแต่ละเดือน"
-          />
-        </>
-      ),
-    },
-  ];
+  const selectedBranchData = selectedBranch
+    ? branchesData.find((b) => b.code === selectedBranch)
+    : null;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-sky-50 via-slate-50 to-blue-100 font-sans">
-      <div className="max-w-7xl mx-auto px-4 py-8">
-        {/* Header */}
-        <div className="text-center mb-8 md:mb-12">
-          <div className="inline-flex items-center justify-center w-16 h-16 md:w-20 md:h-20 bg-gradient-to-r from-sky-500 to-blue-600 rounded-full mb-4 md:mb-6 shadow-lg">
-            <span className="text-2xl md:text-3xl text-white">📊</span>
-          </div>
-          <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold bg-gradient-to-r from-slate-800 to-slate-600 bg-clip-text text-transparent mb-3 md:mb-4 px-4">
-            <span className="block sm:inline">Sales Report</span>
-            <span className="block sm:inline sm:ml-2 text-xl sm:text-2xl md:text-3xl lg:text-4xl text-slate-600">
-              {currentBranchName}
-            </span>
-          </h1>
-          <p className="text-sm sm:text-base md:text-lg lg:text-xl text-slate-600 font-medium px-4">
-            รายงานยอดขาย เดือน พฤษภาคม - กรกฎาคม 2025
-          </p>
-          <div className="w-16 md:w-24 h-1 bg-gradient-to-r from-sky-500 to-blue-500 mx-auto mt-3 md:mt-4 rounded-full"></div>
-        </div>
+    <div className="min-h-screen bg-slate-950 text-white font-sans">
+      {/* Animated Background */}
+      <div className="fixed inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-0 left-1/4 w-96 h-96 bg-amber-500/10 rounded-full blur-3xl animate-pulse" />
+        <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl animate-pulse delay-1000" />
+        <div className="absolute top-1/2 left-1/2 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl animate-pulse delay-500" />
+      </div>
 
-        {/* Tab Navigation with Branch Selector */}
-        <TabNavigation
-          tabs={tabs}
-          defaultTab="sales"
-          selectedBranch={selectedBranch}
-          onBranchChange={setSelectedBranch}
-          currentBranchName={currentBranchName}
-        />
+      <div className="relative z-10">
+        {/* Header */}
+        <header className="border-b border-slate-800/50 backdrop-blur-xl bg-slate-950/80 sticky top-0 z-50">
+          <div className="max-w-7xl mx-auto px-4 py-6">
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+              <div className="flex items-center gap-4">
+                <div className="relative">
+                  <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-amber-400 to-orange-600 flex items-center justify-center shadow-lg shadow-amber-500/25">
+                    <span className="text-2xl">📊</span>
+                  </div>
+                  <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-emerald-500 rounded-full border-2 border-slate-950 flex items-center justify-center">
+                    <span className="text-xs">✓</span>
+                  </div>
+                </div>
+                <div>
+                  <h1 className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-white via-amber-200 to-amber-400 bg-clip-text text-transparent">
+                    Sales Performance
+                  </h1>
+                  <p className="text-slate-400 text-sm md:text-base font-medium">
+                    November 2025 Report
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center gap-3">
+                <span className="px-4 py-2 bg-slate-800/50 rounded-full text-sm font-medium text-slate-300 border border-slate-700/50">
+                  🗓️ พฤศจิกายน 2568
+                </span>
+                <span className="px-4 py-2 bg-emerald-500/20 rounded-full text-sm font-medium text-emerald-400 border border-emerald-500/30">
+                  ⚡ Live Data
+                </span>
+              </div>
+            </div>
+          </div>
+        </header>
+
+        {/* Main Content */}
+        <main className="max-w-7xl mx-auto px-4 py-8">
+          {/* Overall Stats */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+            <StatCard
+              title="เป้าหมายรวม"
+              value={`฿${formatCurrency(totalTarget)}`}
+              icon="🎯"
+              color="amber"
+            />
+            <StatCard
+              title="ยอด MTD รวม"
+              value={`฿${formatCurrency(totalMTD)}`}
+              icon="💰"
+              color="emerald"
+            />
+            <StatCard
+              title="% บรรลุเป้า"
+              value={formatPercent(overallAchieve)}
+              icon="📈"
+              color="blue"
+              progress={overallAchieve}
+            />
+            <StatCard
+              title="ยังขาดอีก"
+              value={`฿${formatCurrency(totalTarget - totalMTD)}`}
+              icon="🔥"
+              color="pink"
+            />
+          </div>
+
+          {/* Branch Cards */}
+          <h2 className="text-xl font-bold mb-4 text-slate-200 flex items-center gap-2">
+            <span className="w-2 h-6 bg-amber-500 rounded-full"></span>
+            สาขาทั้งหมด
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+            {branchesData.map((branch, i) => (
+              <BranchCard
+                key={branch.code}
+                branch={branch}
+                color={COLORS.branches[i]}
+                isSelected={selectedBranch === branch.code}
+                onClick={() =>
+                  setSelectedBranch(
+                    selectedBranch === branch.code ? null : branch.code
+                  )
+                }
+              />
+            ))}
+          </div>
+
+          {/* Charts Section */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+            {/* Revenue Bar Chart */}
+            <div className="bg-slate-900/50 backdrop-blur-sm rounded-2xl p-6 border border-slate-800/50">
+              <h3 className="text-lg font-semibold mb-4 text-slate-200 flex items-center gap-2">
+                <span className="text-amber-500">📊</span>
+                ยอด MTD แต่ละสาขา
+              </h3>
+              <ResponsiveContainer width="100%" height={300}>
+                <BarChart data={branchChartData}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
+                  <XAxis dataKey="name" stroke="#94a3b8" />
+                  <YAxis stroke="#94a3b8" tickFormatter={(v) => `${v / 1000}K`} />
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: "#1e293b",
+                      border: "1px solid #334155",
+                      borderRadius: "12px",
+                    }}
+                    formatter={(value: number) => [
+                      `฿${formatCurrency(value)}`,
+                      "MTD",
+                    ]}
+                  />
+                  <Bar dataKey="mtd" radius={[8, 8, 0, 0]}>
+                    {branchChartData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.fill} />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+
+            {/* Pie Chart */}
+            <div className="bg-slate-900/50 backdrop-blur-sm rounded-2xl p-6 border border-slate-800/50">
+              <h3 className="text-lg font-semibold mb-4 text-slate-200 flex items-center gap-2">
+                <span className="text-emerald-500">🥧</span>
+                สัดส่วนยอดขายแต่ละสาขา
+              </h3>
+              <ResponsiveContainer width="100%" height={300}>
+                <PieChart>
+                  <Pie
+                    data={pieData}
+                    cx="50%"
+                    cy="50%"
+                    innerRadius={60}
+                    outerRadius={100}
+                    paddingAngle={4}
+                    dataKey="value"
+                    label={({ name, percent }) =>
+                      `${name} ${(percent * 100).toFixed(0)}%`
+                    }
+                  >
+                    {pieData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.fill} />
+                    ))}
+                  </Pie>
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: "#1e293b",
+                      border: "1px solid #334155",
+                      borderRadius: "12px",
+                    }}
+                    formatter={(value: number) => [
+                      `฿${formatCurrency(value)}`,
+                      "MTD",
+                    ]}
+                  />
+                </PieChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+
+          {/* Achievement Progress */}
+          <div className="bg-slate-900/50 backdrop-blur-sm rounded-2xl p-6 border border-slate-800/50 mb-8">
+            <h3 className="text-lg font-semibold mb-6 text-slate-200 flex items-center gap-2">
+              <span className="text-blue-500">🎯</span>
+              เปรียบเทียบเป้าหมาย vs. ยอดจริง
+            </h3>
+            <div className="space-y-6">
+              {branchesData.map((branch, i) => (
+                <div key={branch.code} className="space-y-2">
+                  <div className="flex justify-between items-center">
+                    <div className="flex items-center gap-3">
+                      <div
+                        className="w-3 h-3 rounded-full"
+                        style={{ backgroundColor: COLORS.branches[i] }}
+                      />
+                      <span className="font-medium text-slate-300">
+                        {branch.name}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-4">
+                      <span className="text-sm text-slate-400">
+                        ฿{formatCurrency(branch.mtdRevenue)} / ฿
+                        {formatCurrency(branch.targetRevenue)}
+                      </span>
+                      <span
+                        className={`text-sm font-bold px-2 py-1 rounded-lg ${
+                          branch.achievePercent >= 70
+                            ? "bg-emerald-500/20 text-emerald-400"
+                            : branch.achievePercent >= 50
+                            ? "bg-amber-500/20 text-amber-400"
+                            : "bg-red-500/20 text-red-400"
+                        }`}
+                      >
+                        {formatPercent(branch.achievePercent)}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="relative h-3 bg-slate-800 rounded-full overflow-hidden">
+                    <div
+                      className="absolute inset-y-0 left-0 rounded-full transition-all duration-1000 ease-out"
+                      style={{
+                        width: `${Math.min(branch.achievePercent, 100)}%`,
+                        backgroundColor: COLORS.branches[i],
+                      }}
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Selected Branch Detail */}
+          {selectedBranchData && (
+            <div className="bg-slate-900/50 backdrop-blur-sm rounded-2xl p-6 border border-slate-800/50 mb-8">
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-xl font-bold text-slate-200 flex items-center gap-2">
+                  <span className="text-purple-500">👥</span>
+                  พนักงาน {selectedBranchData.name}
+                </h3>
+                <button
+                  onClick={() => setSelectedBranch(null)}
+                  className="p-2 hover:bg-slate-800 rounded-lg transition-colors"
+                >
+                  ✕
+                </button>
+              </div>
+
+              {/* Staff Performance */}
+              <div className="grid gap-4">
+                {selectedBranchData.staff.map((staff) => (
+                  <StaffRow key={staff.name} staff={staff} />
+                ))}
+              </div>
+
+              {/* Branch Conversion Rates */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
+                <div className="bg-slate-800/50 rounded-xl p-4 text-center">
+                  <p className="text-slate-400 text-sm mb-1">Closed Ratio NEW</p>
+                  <p className="text-2xl font-bold text-emerald-400">
+                    {formatPercent(selectedBranchData.closedRatioNew)}
+                  </p>
+                </div>
+                <div className="bg-slate-800/50 rounded-xl p-4 text-center">
+                  <p className="text-slate-400 text-sm mb-1">
+                    Closed Ratio RENEW
+                  </p>
+                  <p className="text-2xl font-bold text-blue-400">
+                    {formatPercent(selectedBranchData.closedRatioRenew)}
+                  </p>
+                </div>
+                <div className="bg-slate-800/50 rounded-xl p-4 text-center">
+                  <p className="text-slate-400 text-sm mb-1">Add-on Rate</p>
+                  <p className="text-2xl font-bold text-amber-400">
+                    {formatPercent(selectedBranchData.addOnPercent)}
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Conversion Analysis */}
+          <h2 className="text-xl font-bold mb-4 text-slate-200 flex items-center gap-2">
+            <span className="w-2 h-6 bg-emerald-500 rounded-full"></span>
+            การวิเคราะห์ Conversion Rate
+          </h2>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+            {/* Conversion Chart */}
+            <div className="bg-slate-900/50 backdrop-blur-sm rounded-2xl p-6 border border-slate-800/50">
+              <h3 className="text-lg font-semibold mb-4 text-slate-200 flex items-center gap-2">
+                <span className="text-cyan-500">📈</span>
+                อัตราปิด NEW vs RENEW
+              </h3>
+              <ResponsiveContainer width="100%" height={300}>
+                <BarChart
+                  data={branchesData.map((b) => ({
+                    name: b.code,
+                    new: b.closedRatioNew,
+                    renew: b.closedRatioRenew,
+                  }))}
+                  layout="vertical"
+                >
+                  <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
+                  <XAxis type="number" domain={[0, 100]} stroke="#94a3b8" />
+                  <YAxis dataKey="name" type="category" stroke="#94a3b8" />
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: "#1e293b",
+                      border: "1px solid #334155",
+                      borderRadius: "12px",
+                    }}
+                    formatter={(value: number) => [`${value.toFixed(1)}%`]}
+                  />
+                  <Legend />
+                  <Bar
+                    dataKey="new"
+                    name="NEW"
+                    fill="#10b981"
+                    radius={[0, 4, 4, 0]}
+                  />
+                  <Bar
+                    dataKey="renew"
+                    name="RENEW"
+                    fill="#3b82f6"
+                    radius={[0, 4, 4, 0]}
+                  />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+
+            {/* Add-on Rate */}
+            <div className="bg-slate-900/50 backdrop-blur-sm rounded-2xl p-6 border border-slate-800/50">
+              <h3 className="text-lg font-semibold mb-4 text-slate-200 flex items-center gap-2">
+                <span className="text-pink-500">🎁</span>
+                Add-on Rate แต่ละสาขา
+              </h3>
+              <ResponsiveContainer width="100%" height={300}>
+                <RadialBarChart
+                  innerRadius="20%"
+                  outerRadius="90%"
+                  data={branchesData.map((b, i) => ({
+                    name: b.code,
+                    value: Math.min(b.addOnPercent, 100),
+                    fill: COLORS.branches[i],
+                  }))}
+                  startAngle={180}
+                  endAngle={0}
+                >
+                  <RadialBar
+                    background
+                    dataKey="value"
+                    cornerRadius={10}
+                    label={{ fill: "#fff", position: "insideStart" }}
+                  />
+                  <Legend
+                    iconSize={10}
+                    layout="horizontal"
+                    verticalAlign="bottom"
+                  />
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: "#1e293b",
+                      border: "1px solid #334155",
+                      borderRadius: "12px",
+                    }}
+                    formatter={(value: number, name: string, props: any) => [
+                      `${branchesData.find((b) => b.code === props.payload.name)?.addOnPercent.toFixed(1)}%`,
+                      props.payload.name,
+                    ]}
+                  />
+                </RadialBarChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+
+          {/* All Staff Table */}
+          <div className="bg-slate-900/50 backdrop-blur-sm rounded-2xl p-6 border border-slate-800/50">
+            <h3 className="text-xl font-bold mb-6 text-slate-200 flex items-center gap-2">
+              <span className="text-amber-500">🏆</span>
+              รายละเอียดพนักงานทุกสาขา
+            </h3>
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b border-slate-700">
+                    <th className="text-left py-3 px-4 text-slate-400 font-medium">
+                      สาขา
+                    </th>
+                    <th className="text-left py-3 px-4 text-slate-400 font-medium">
+                      ชื่อ
+                    </th>
+                    <th className="text-right py-3 px-4 text-slate-400 font-medium">
+                      Revenue
+                    </th>
+                    <th className="text-right py-3 px-4 text-slate-400 font-medium">
+                      New
+                    </th>
+                    <th className="text-right py-3 px-4 text-slate-400 font-medium">
+                      Renew
+                    </th>
+                    <th className="text-right py-3 px-4 text-slate-400 font-medium">
+                      PT+BS
+                    </th>
+                    <th className="text-center py-3 px-4 text-slate-400 font-medium">
+                      Status
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {branchesData.flatMap((branch, branchIdx) =>
+                    branch.staff.map((staff, staffIdx) => (
+                      <tr
+                        key={`${branch.code}-${staff.name}`}
+                        className="border-b border-slate-800/50 hover:bg-slate-800/30 transition-colors"
+                      >
+                        {staffIdx === 0 && (
+                          <td
+                            rowSpan={branch.staff.length}
+                            className="py-3 px-4"
+                          >
+                            <span
+                              className="px-3 py-1 rounded-lg text-sm font-medium"
+                              style={{
+                                backgroundColor: `${COLORS.branches[branchIdx]}20`,
+                                color: COLORS.branches[branchIdx],
+                              }}
+                            >
+                              {branch.code}
+                            </span>
+                          </td>
+                        )}
+                        <td className="py-3 px-4">
+                          <div className="flex items-center gap-2">
+                            <span
+                              className={`w-2 h-2 rounded-full ${
+                                staff.role === "PT"
+                                  ? "bg-emerald-500"
+                                  : "bg-blue-500"
+                              }`}
+                            />
+                            <span className="text-slate-200">{staff.name}</span>
+                          </div>
+                        </td>
+                        <td className="py-3 px-4 text-right font-mono text-slate-300">
+                          ฿{formatCurrency(staff.totalRevenue)}
+                        </td>
+                        <td className="py-3 px-4 text-right font-mono text-emerald-400">
+                          ฿{formatCurrency(staff.newSales)}
+                        </td>
+                        <td className="py-3 px-4 text-right font-mono text-blue-400">
+                          ฿{formatCurrency(staff.renewSales)}
+                        </td>
+                        <td className="py-3 px-4 text-right font-mono text-slate-400">
+                          {staff.ptBs}
+                        </td>
+                        <td className="py-3 px-4 text-center">
+                          {staff.totalRevenue > 200000 ? (
+                            <span className="px-2 py-1 bg-emerald-500/20 text-emerald-400 rounded-lg text-xs font-medium">
+                              🌟 Top
+                            </span>
+                          ) : staff.totalRevenue > 100000 ? (
+                            <span className="px-2 py-1 bg-amber-500/20 text-amber-400 rounded-lg text-xs font-medium">
+                              ⚡ Good
+                            </span>
+                          ) : (
+                            <span className="px-2 py-1 bg-slate-500/20 text-slate-400 rounded-lg text-xs font-medium">
+                              📊 Active
+                            </span>
+                          )}
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </main>
 
         {/* Footer */}
-        <div className="text-center mt-16 pb-8">
-          <div className="inline-flex items-center justify-center space-x-2 text-slate-500 text-sm font-medium">
-            <div className="w-2 h-2 bg-sky-500 rounded-full"></div>
-            <p>
-              สร้างเมื่อ:{" "}
+        <footer className="border-t border-slate-800/50 py-8 mt-12">
+          <div className="max-w-7xl mx-auto px-4 text-center">
+            <p className="text-slate-500 text-sm">
+              📊 Sales Performance Report • November 2025 • Last updated:{" "}
               {new Date().toLocaleDateString("th-TH", {
                 year: "numeric",
                 month: "long",
                 day: "numeric",
               })}
             </p>
-            <div className="w-2 h-2 bg-sky-500 rounded-full"></div>
+          </div>
+        </footer>
+      </div>
+    </div>
+  );
+}
+
+// Components
+function StatCard({
+  title,
+  value,
+  icon,
+  color,
+  progress,
+}: {
+  title: string;
+  value: string;
+  icon: string;
+  color: "amber" | "emerald" | "blue" | "pink";
+  progress?: number;
+}) {
+  const colorStyles = {
+    amber: {
+      bg: "bg-amber-500/10",
+      border: "border-amber-500/20",
+      text: "text-amber-400",
+      glow: "shadow-amber-500/10",
+    },
+    emerald: {
+      bg: "bg-emerald-500/10",
+      border: "border-emerald-500/20",
+      text: "text-emerald-400",
+      glow: "shadow-emerald-500/10",
+    },
+    blue: {
+      bg: "bg-blue-500/10",
+      border: "border-blue-500/20",
+      text: "text-blue-400",
+      glow: "shadow-blue-500/10",
+    },
+    pink: {
+      bg: "bg-pink-500/10",
+      border: "border-pink-500/20",
+      text: "text-pink-400",
+      glow: "shadow-pink-500/10",
+    },
+  };
+
+  const style = colorStyles[color];
+
+  return (
+    <div
+      className={`${style.bg} ${style.border} border rounded-2xl p-5 backdrop-blur-sm shadow-lg ${style.glow} hover:scale-[1.02] transition-transform duration-300`}
+    >
+      <div className="flex items-center justify-between mb-3">
+        <span className="text-2xl">{icon}</span>
+        <span className={`text-xs font-medium ${style.text}`}>NOV 2025</span>
+      </div>
+      <p className="text-slate-400 text-sm mb-1">{title}</p>
+      <p className={`text-2xl font-bold ${style.text}`}>{value}</p>
+      {progress !== undefined && (
+        <div className="mt-3 h-2 bg-slate-800 rounded-full overflow-hidden">
+          <div
+            className={`h-full rounded-full ${
+              color === "amber"
+                ? "bg-amber-500"
+                : color === "emerald"
+                ? "bg-emerald-500"
+                : color === "blue"
+                ? "bg-blue-500"
+                : "bg-pink-500"
+            }`}
+            style={{ width: `${Math.min(progress, 100)}%` }}
+          />
+        </div>
+      )}
+    </div>
+  );
+}
+
+function BranchCard({
+  branch,
+  color,
+  isSelected,
+  onClick,
+}: {
+  branch: BranchData;
+  color: string;
+  isSelected: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <div
+      onClick={onClick}
+      className={`rounded-2xl p-5 cursor-pointer transition-all duration-300 border ${
+        isSelected
+          ? "bg-slate-800/80 border-slate-600 scale-[1.02]"
+          : "bg-slate-900/50 border-slate-800/50 hover:bg-slate-800/50 hover:border-slate-700"
+      }`}
+    >
+      <div className="flex items-center gap-3 mb-4">
+        <div
+          className="w-4 h-10 rounded-full"
+          style={{ backgroundColor: color }}
+        />
+        <div>
+          <h3 className="font-bold text-slate-200">{branch.name}</h3>
+          <p className="text-sm text-slate-400">{branch.staff.length} พนักงาน</p>
+        </div>
+      </div>
+
+      <div className="space-y-3">
+        <div className="flex justify-between items-center">
+          <span className="text-sm text-slate-400">MTD</span>
+          <span className="font-bold text-slate-200">
+            ฿{formatCurrency(branch.mtdRevenue)}
+          </span>
+        </div>
+        <div className="flex justify-between items-center">
+          <span className="text-sm text-slate-400">เป้า</span>
+          <span className="text-slate-400">
+            ฿{formatCurrency(branch.targetRevenue)}
+          </span>
+        </div>
+        <div className="h-2 bg-slate-800 rounded-full overflow-hidden">
+          <div
+            className="h-full rounded-full transition-all duration-500"
+            style={{
+              width: `${Math.min(branch.achievePercent, 100)}%`,
+              backgroundColor: color,
+            }}
+          />
+        </div>
+        <div className="flex justify-between items-center">
+          <span
+            className={`text-lg font-bold ${
+              branch.achievePercent >= 70
+                ? "text-emerald-400"
+                : branch.achievePercent >= 50
+                ? "text-amber-400"
+                : "text-red-400"
+            }`}
+          >
+            {formatPercent(branch.achievePercent)}
+          </span>
+          <span className="text-xs text-slate-500">
+            {isSelected ? "คลิกเพื่อปิด" : "คลิกดูรายละเอียด"}
+          </span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function StaffRow({ staff }: { staff: StaffData }) {
+  return (
+    <div className="bg-slate-800/30 rounded-xl p-4 hover:bg-slate-800/50 transition-colors">
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div className="flex items-center gap-3">
+          <div
+            className={`w-10 h-10 rounded-xl flex items-center justify-center ${
+              staff.role === "PT"
+                ? "bg-emerald-500/20 text-emerald-400"
+                : "bg-blue-500/20 text-blue-400"
+            }`}
+          >
+            <span className="text-lg">{staff.role === "PT" ? "🏋️" : "💆"}</span>
+          </div>
+          <div>
+            <p className="font-semibold text-slate-200">{staff.name}</p>
+            <p className="text-sm text-slate-400">
+              {staff.role === "PT" ? "Personal Trainer" : "Beauty Therapist"}
+            </p>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-3 md:grid-cols-5 gap-4 text-center">
+          <div>
+            <p className="text-xs text-slate-400 mb-1">Revenue</p>
+            <p className="font-bold text-amber-400">
+              ฿{formatCurrency(staff.totalRevenue)}
+            </p>
+          </div>
+          <div>
+            <p className="text-xs text-slate-400 mb-1">New</p>
+            <p className="font-bold text-emerald-400">
+              ฿{formatCurrency(staff.newSales)}
+            </p>
+          </div>
+          <div>
+            <p className="text-xs text-slate-400 mb-1">Renew</p>
+            <p className="font-bold text-blue-400">
+              ฿{formatCurrency(staff.renewSales)}
+            </p>
+          </div>
+          <div>
+            <p className="text-xs text-slate-400 mb-1">PT+BS</p>
+            <p className="font-bold text-slate-300">{staff.ptBs}</p>
+          </div>
+          <div>
+            <p className="text-xs text-slate-400 mb-1">SW</p>
+            <p className="font-bold text-slate-300">{staff.sw}</p>
           </div>
         </div>
       </div>
